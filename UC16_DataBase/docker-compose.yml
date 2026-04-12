@@ -1,0 +1,72 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: uc18db
+      MYSQL_ROOT_PASSWORD: Ms7ddhoni123@
+    ports:
+      - "3306:3306"
+    networks:
+      - qm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/uc18db?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Ms7ddhoni123@
+      - APP_JWT_SECRET=3f2a8d7c1e4b9f0a6c3e2d1b7f8a4c9e2d1b7f8a4c9e3f2a8d7c1e4b9f0a6c
+    ports:
+      - "8081:8081"
+    networks:
+      - qm-network
+
+  quantity-service:
+    build: ./quantity-service
+    container_name: quantity-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/uc18db?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Ms7ddhoni123@
+      - APP_JWT_SECRET=3f2a8d7c1e4b9f0a6c3e2d1b7f8a4c9e2d1b7f8a4c9e3f2a8d7c1e4b9f0a6c
+    ports:
+      - "8082:8082"
+    networks:
+      - qm-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      - auth-service
+      - quantity-service
+    ports:
+      - "8080:8080"
+    networks:
+      - qm-network
+
+  frontend:
+    build: ../QuantityMeasurementApp-Frontend/QuantityMeasurementApp-Frontend/qm-frontend
+    container_name: qm-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - qm-network
+
+networks:
+  qm-network:
+    driver: bridge
