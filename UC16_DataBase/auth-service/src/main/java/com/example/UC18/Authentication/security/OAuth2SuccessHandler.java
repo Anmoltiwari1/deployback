@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -19,10 +20,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private static final Logger logger = LoggerFactory.getLogger(OAuth2SuccessHandler.class);
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final String redirectUrl;
  
-    public OAuth2SuccessHandler(JwtUtil jwtUtil, UserRepository userRepository) {
+    public OAuth2SuccessHandler(
+            JwtUtil jwtUtil, 
+            UserRepository userRepository,
+            @Value("${app.oauth2.redirect-url}") String redirectUrl
+    ) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.redirectUrl = redirectUrl;
     }
  
     @Override
@@ -88,9 +95,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
  
     // ── Write JWT to response body ────────────────────────────────────────────
  
-    private void writeTokenResponse(HttpServletResponse response, User user) throws IOException {
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        // Redirect to React with token as query param
-        response.sendRedirect("http://localhost:3000?token=" + token);
-    }
+	private void writeTokenResponse(HttpServletResponse response, User user) throws IOException {
+		String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
+		// Redirect to React with token as query param (e.g. http://localhost:3000?token=...)
+		response.sendRedirect(redirectUrl + "?token=" + token);
+	}
 }
