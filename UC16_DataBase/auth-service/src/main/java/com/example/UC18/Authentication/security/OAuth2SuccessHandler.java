@@ -4,6 +4,8 @@ import com.example.UC18.Authentication.entity.User;
 import com.example.UC18.Authentication.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -14,6 +16,7 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
  
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2SuccessHandler.class);
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
  
@@ -28,24 +31,34 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             HttpServletResponse response,
             Authentication authentication
     ) throws IOException {
- 
+        logger.info("[OAuth2] Authentication successful for provider: {}", authentication.getClass().getSimpleName());
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
- 
-        String email = extractEmail(oAuth2User);
-        User user = findOrRegisterUser(email, detectProvider(oAuth2User));
-        writeTokenResponse(response, user);
+
+        try {
+            String email = extractEmail(oAuth2User);
+            logger.info("[OAuth2] Extracted identifier: {}", email);
+            
+            User user = findOrRegisterUser(email, detectProvider(oAuth2User));
+            writeTokenResponse(response, user);
+        } catch (Exception e) {
+            logger.error("[OAuth2] Error during social login processing", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Social login processing failed: " + e.getMessage());
+        }
     }
  
     // ── Extract email (works for Google + GitHub) ─────────────────────────────
  
     private String extractEmail(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
-        if (email == null) {
-            // GitHub doesn't always expose email — fall back to login username
-            email = oAuth2User.getAttribute("login");
+        if (email == null) email = oAuth2User.getAttribute("login");
+        if (email == null) email = oAuth2User.getAttribute("sub"); // Google
+        if (email == null && oAuth2User.getAttribute("id") != null) {
+            email = String.valueOf(oAuth2User.getAttribute("id"));
         }
+
         if (email == null) {
-            throw new IllegalStateException("Could not extract email from OAuth2 provider");
+            logger.error("[OAuth2] Attributes received: {}", oAuth2User.getAttributes());
+            throw new IllegalStateException("Could not extract identity (email/login/id) from provider");
         }
         return email;
     }

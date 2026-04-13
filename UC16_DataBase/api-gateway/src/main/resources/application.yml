@@ -10,23 +10,29 @@ spring:
         add-to-simple-url-handler-mapping: true
         cors-configurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins: 
+              - "http://localhost"
+              - "http://localhost:3000"
+              - "http://localhost:5173"
             allowedMethods:
               - GET
               - POST
               - PUT
               - DELETE
               - OPTIONS
-            allowedHeaders: "*"
+            allowedHeaders:
+              - "Content-Type"
+              - "Authorization"
+              - "X-Requested-With"
             exposedHeaders:
               - "Authorization"
-            allowCredentials: false
+            allowCredentials: true
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://auth-service:8081}
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/auth/**, /login/**, /oauth2/**
         - id: quantity-service
-          uri: ${QUANTITY_SERVICE_URL:http://quantity-service:8082}
+          uri: ${QUANTITY_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/**
