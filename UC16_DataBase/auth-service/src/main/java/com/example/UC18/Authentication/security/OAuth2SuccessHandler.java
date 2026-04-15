@@ -77,7 +77,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
  
     private void writeTokenResponse(HttpServletResponse response, User user) throws IOException {
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        String frontendUrl = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:3000";
-        response.sendRedirect(frontendUrl + "?token=" + token);
+        response.sendRedirect("https://deploy-front-zgs5.vercel.app?token=" + token);
     }
 }
