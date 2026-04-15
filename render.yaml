@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: api-gateway
+    runtime: docker
+    dockerfilePath: ./UC16_DataBase/api-gateway/Dockerfile
+    dockerContext: ./UC16_DataBase/api-gateway
+    envVars:
+      - key: AUTH_SERVICE_URL
+        value: https://auth-service.onrender.com
+      - key: QUANTITY_SERVICE_URL
+        value: https://quantity-service.onrender.com
+
+  - type: web
+    name: auth-service
+    runtime: docker
+    dockerfilePath: ./UC16_DataBase/auth-service/Dockerfile
+    dockerContext: ./UC16_DataBase/auth-service
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://<your-db-host>:3306/uc18db?useSSL=false&allowPublicKeyRetrieval=true
+      - key: SPRING_DATASOURCE_USERNAME
+        value: root
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: APP_JWT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+
+  - type: web
+    name: quantity-service
+    runtime: docker
+    dockerfilePath: ./UC16_DataBase/quantity-service/Dockerfile
+    dockerContext: ./UC16_DataBase/quantity-service
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://<your-db-host>:3306/uc18db?useSSL=false&allowPublicKeyRetrieval=true
+      - key: SPRING_DATASOURCE_USERNAME
+        value: root
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: APP_JWT_SECRET
+        sync: false
