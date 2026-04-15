@@ -1,0 +1,4 @@
+UC16_DataBase/auth-service/target/
+UC16_DataBase/quantity-service/target/
+UC16_DataBase/api-gateway/target/
+.env
