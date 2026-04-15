@@ -1,8 +1,0 @@
-target/
-*.jar
-.mvn/
-mvnw
-mvnw.cmd
-.classpath
-.project
-.settings/
