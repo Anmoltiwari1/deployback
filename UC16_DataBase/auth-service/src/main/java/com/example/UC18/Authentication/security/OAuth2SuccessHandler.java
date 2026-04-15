@@ -77,7 +77,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
  
     private void writeTokenResponse(HttpServletResponse response, User user) throws IOException {
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        // Redirect to React with token as query param
-        response.sendRedirect("http://localhost:3000?token=" + token);
+        String frontendUrl = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:3000";
+        response.sendRedirect(frontendUrl + "?token=" + token);
     }
 }
