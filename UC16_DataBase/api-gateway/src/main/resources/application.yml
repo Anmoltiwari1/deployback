@@ -11,7 +11,8 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "${FRONTEND_URL:http://localhost:3000}"
+              - "https://deploy-front-zgs5.vercel.app"
+              - "http://localhost:3000"
             allowedMethods:
               - GET
               - POST
